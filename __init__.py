@@ -17,36 +17,30 @@
 # ##### END GPL LICENSE BLOCK #####
 #
 
+from . import techdraw
+from bpy.types import Menu
+import os
+import blf
+import bpy
+
 bl_info = {
     "name": "TechDraw",
     "author": "Laurent Tesson",
-    "version": (0,0,5),
+    "version": (0, 0, 5),
     "location": "View 3D > Object Mode > Tool Shelf",
     "blender": (2, 82, 0),
     "description": "Outils for technical drawing",
     "warning": "",
     "category": "Object",
-    }
+}
 
 
-if "bpy" in locals():
-    import importlib
-    importlib.reload(techdraw)
-else:
-    from . import techdraw
-
-import bpy
-import blf
-import os
-from bpy.types import Menu
-
-
-def get_itemsScale(self, context):    
-    prefs = bpy.context.preferences.addons['techdraw'].preferences        
+def get_itemsScale(self, context):
+    prefs = bpy.context.preferences.addons[__package__].preferences
     path = prefs.pathTemplates
     scales_file = path + os.sep + 'Scales.txt'
-    
-    l = [];    
+
+    l = []
 
     if(os.path.isfile(scales_file) == False):
         file = open(scales_file, "w")
@@ -67,30 +61,34 @@ def get_itemsScale(self, context):
         for line in f:
             s = line.split(',')
             l.append((s[1], s[1], s[2]))
-    return l;
+    return l
 
 
 class IO_Prefs(bpy.types.AddonPreferences):
-    bl_idname = __name__
-    
+    bl_idname = __package__
+
     path = os.path.join(os.path.dirname(__file__), "templates")
-    
-    scaleSheets:  bpy.props.FloatProperty(default=10)    
-    resolutionX:  bpy.props.IntProperty(default=4200)    
-    pathTemplates:  bpy.props.StringProperty(default = path)
-    
+
+    scaleSheets:  bpy.props.FloatProperty(default=10)
+    resolutionX:  bpy.props.IntProperty(default=4200)
+    pathTemplates:  bpy.props.StringProperty(name="pathTemplates",
+                                             description="Path Templates",
+                                             subtype="DIR_PATH",
+                                             default=path,)
+
     def draw(self, context):
         layout = self.layout
         box = layout.box()
         split = box.split()
         col = split.column()
         col.label(text="Default Values:")
-        col.prop(self, "scaleSheets",text="Scale Sheets")
+        col.prop(self, "scaleSheets", text="Scale Sheets")
         col.separator()
-        col.prop(self, "resolutionX",text="Resolution X (px) render image")
+        col.prop(self, "resolutionX", text="Resolution X (px) render image")
         col.separator()
-        col.prop(self, "pathTemplates",text="Path Templates")
-        
+        col.prop(self, "pathTemplates", text="Path Templates")
+
+
 # Register
 classes = [
     techdraw.OB_PT_LSToolsPanel,
@@ -114,7 +112,7 @@ classes = [
     techdraw.OBJECT_OT_TDModeButton,
     techdraw.OBJECT_OT_TDModeOffButton,
     techdraw.OBJECT_OT_TDModeAddButton,
-    techdraw.OBJECT_OT_TDModeVisibleButton,    
+    techdraw.OBJECT_OT_TDModeVisibleButton,
     techdraw.OBJECT_OT_DupliBoolButton,
     techdraw.OBJECT_OT_SnapPartsButton,
     techdraw.OBJECT_OT_AddScaleButton,
@@ -122,38 +120,42 @@ classes = [
     IO_Prefs,
 ]
 
+
 def register():
     from bpy.utils import register_class
     for cls in classes:
         register_class(cls)
-    
-    bpy.types.Object.IO_scaleSheets = bpy.props.FloatProperty(
-    name="Scale Sheets",
-    description="Scale Sheets",
-    min=0.01, max=100,
-    default = bpy.context.preferences.addons['techdraw'].preferences.scaleSheets,
-    )
-    
-    bpy.types.Object.IO_resolutionX = bpy.props.IntProperty(
-    name="Resolution X (px) render image",
-    description="Resolution X (px) render image",
-    min=100, max=10000,
-    default = bpy.context.preferences.addons['techdraw'].preferences.resolutionX,
-    )
-    
-    path = os.path.join(os.path.dirname(__file__), "Templates")
-    bpy.types.Object.IO_pathTemplates = bpy.props.StringProperty(
-    name="pathTemplates",
-    description="Path Templates",
-    default = "path",
-    )
-    
+
+    # bpy.types.Object.IO_scaleSheets = bpy.props.FloatProperty(
+    #     name="Scale Sheets",
+    #     description="Scale Sheets",
+    #     min=0.01, max=100,
+    #     default=bpy.context.preferences.addons[__package__].preferences.scaleSheets,
+    # )
+
+    # bpy.types.Object.IO_resolutionX = bpy.props.IntProperty(
+    #     name="Resolution X (px) render image",
+    #     description="Resolution X (px) render image",
+    #     min=100, max=10000,
+    #     default=bpy.context.preferences.addons[__package__].preferences.resolutionX,
+    # )
+
+    # path = os.path.join(os.path.dirname(__file__), "Templates")
+    # bpy.types.Object.IO_pathTemplates = bpy.props.StringProperty(
+    #     name="pathTemplates",
+    #     description="Path Templates",
+    #     subtype="DIR_PATH",
+    #     default=path,
+    # )
+
     bpy.types.Scene.custom_scale = bpy.props.EnumProperty(items=get_itemsScale)
 
-def unregister():    
+
+def unregister():
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
+
 
 if __name__ == "__main__":
     register()
