@@ -1,2 +1,2 @@
 # techdraw
-Addon for Blender 3D - Tools box for industrial designer
+Addon for Blender 3D - Toolbox for industrial designers
